@@ -25,11 +25,7 @@ let package = Package(
         .package(url: "https://github.com/swift-atoms/swift-functor.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-finite.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-algebra.git", branch: "main"),
-        .package(
-            url: "https://github.com/pointfreeco/swift-dependencies",
-            from: "1.0.0",
-            traits: ["Clocks", "Foundation", "FoundationNetworking"]
-        ),
+        .package(url: "https://github.com/swift-compositions/swift-dependencies.git", branch: "main"),
         .package(url: "https://github.com/pointfreeco/swift-issue-reporting", from: "2.1.0"),
         .package(url: "https://github.com/swift-atoms/swift-optic.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-operation.git", branch: "main"),
