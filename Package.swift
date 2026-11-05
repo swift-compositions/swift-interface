@@ -21,7 +21,7 @@ let package = Package(
         .trait(name: "Dependencies", description: "Dependencies integration")
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
+        .package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "1.7.3"),
         .package(url: "https://github.com/swift-atoms/swift-functor.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-finite.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-algebra.git", branch: "main"),
