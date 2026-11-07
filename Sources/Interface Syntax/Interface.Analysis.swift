@@ -4,9 +4,6 @@ public import SwiftSyntax
 public import Type_Algebra_Syntax
 
 extension Interface {
-    // An interface read as its operations (Operation.Analysis, whose symbols @Operations declares beside the
-    // protocol) and its children (the getters of the product). @Interface derives nothing about an operation
-    // itself; it composes symbols into a model, a Call and an interpreter.
     public struct Analysis {
         public typealias Symbol = Operation.Analysis.Symbol
 

@@ -2,8 +2,6 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-// Canonical child injection and its postcomposition. The coproduct and embedding are
-// sibling member declarations; these extensions each extend exactly their attached type.
 struct Embeddings: ExtensionMacro {
 }
 

@@ -5,23 +5,6 @@ public import SwiftSyntax
 import SwiftSyntaxBuilder
 import Type_Algebra_Syntax
 
-// @Interface composes. The protocol's @Operations declares one symbol per operation (`Owner.Greet`, with its
-// Input/Output/Failure); @Product, attached to the generated model protocol, derives the stored arrows and
-// their initializer; conditional conformance helper, @Prisms/@Folds/@Cases and @Eliminator give the Call its
-// capabilities and algebra. What is derived here is what no atom models: the model's requirements, the
-// label-preserving witnesses, the Call's constructors, and the interpreter.
-//
-// Every derived declaration is a member, never an extension: an extension macro attached inside another macro's
-// extension output is typechecked but never lowered (Swift 6.4), so the attached atoms only work among members.
-//
-// | derived                           | spelling                                                             |
-// |-----------------------------------|----------------------------------------------------------------------|
-// | model requirement / product label | the symbol's case name (`greet`, `run`, `id`, `completedIn`)         |
-// | witness                           | the declaration's own signature; `callAsFunction` for a primary; and |
-// |                                   | one overload per symbol taking its Input                             |
-// | Call case / constructor           | the symbol's case name; the constructor takes the declaration's      |
-// |                                   | parameter clause                                                     |
-// | leaf Call parameter               | symbol name + `Application`; child: capitalised name + `Call`        |
 extension Interface {
     public enum Derivation {
         public static func members(of signature: Interface.Analysis, sendable: Bool = false, inputAttributes: [AttributeSyntax] = [], inputConformances: [String] = []) -> [DeclSyntax] {
@@ -85,9 +68,6 @@ extension Interface {
             }
         }
 
-        // A child coordinate is a typed projection of the existing owner, not another model of its operations.
-        // Interpreters select it without parsing imported syntax. `Members` lists the coordinates as types, in
-        // declaration order, so that a reader folds over the interface with conformances the compiler checks.
         private static func structure(of signature: Interface.Analysis, access: String) -> [DeclSyntax] {
             let owner = signature.owner.trimmedDescription
             let children = signature.children.map { child in
@@ -115,13 +95,11 @@ extension Interface {
             ]
         }
 
-        // A declared name without the backticks that made it an identifier.
         private static func spelled(_ name: TokenSyntax) -> String {
             let text = name.text
             return text.hasPrefix("`") && text.hasSuffix("`") ? String(text.dropFirst().dropLast()) : text
         }
 
-        // The primary operation is the interface itself: `Reminders.Update.Input` is `Reminders.Update.Run.Input`.
         private static func primary(
             of signature: Interface.Analysis,
             access: String
@@ -133,10 +111,6 @@ extension Interface {
                 }
         }
 
-        // The model is a product of Input-typed operation arrows and child values.
-        // Every owner stores this product; composition never selects an alternate storage layout.
-        // Its analysis is read back through Product.Analysis
-        // so that the owner's forwarding initializer takes exactly the product's parameters.
         struct Model {
             let declaration: DeclSyntax
             let analysis: Product.Analysis
@@ -168,8 +142,6 @@ extension Interface {
             return Model(declaration: DeclSyntax(stringLiteral: "@Product\n\(source)"), analysis: analysis)
         }
 
-        // The owner witnesses its own protocol through its product or stored children, keeping the
-        // declaration's labels; each operation is also callable with its Input.
         private static func witnesses(
             of signature: Interface.Analysis,
             model: Model,
@@ -177,8 +149,6 @@ extension Interface {
             access: String,
             sendable: Bool
         ) throws -> [DeclSyntax] {
-            // The primary operation has no name at its call site (`reminders.read()`), so its closure has none in
-            // the owner's initializer either: `run` is storage, never spelled by the reader.
             let record = try model.analysis.storage()
             let parameters = try model.analysis.storage(
                 unlabelled: Set(signature.run.map { [$0.caseName] } ?? [])
@@ -223,7 +193,6 @@ extension Interface {
             return (stored + children + calls).map { DeclSyntax(stringLiteral: $0) }
         }
 
-        // The owner runs a Call by handing itself to the Call.
         private static func interpreter(
             of signature: Interface.Analysis,
             access: String
@@ -237,18 +206,6 @@ extension Interface {
             )
         }
 
-        // The Call is generic in its leaves so that the compiler, not this macro, decides its capabilities:
-        // The conditional conformance helper add each exactly when every leaf has it. A leaf is anything `Applying` the
-        // operation's Input (its Application, in practice). Child calls remain generic too; constrained
-        // child inclusion maps expose property navigation on their canonical specialization. Its algebra is attached, not derived here:
-        // @Prisms, @Folds and @Cases from swift-optic, @Eliminator from swift-coproduct.
-        //
-        // `Embedding<Root>` names the operations again as functions building a Root from a Call: on the Call
-        // itself (`.update.complete(id, done)`), or handed to a sender (`store.delete(id)` through `sending`).
-        //
-        // Call remains Escapable because its canonical generated prisms return both Call and Application from
-        // stored escaping arrows. Swift 6.4 cannot express those result lifetime dependencies; the focused Optic
-        // and Interface compiler fixtures lock down that boundary.
         private static func call(
             of signature: Interface.Analysis,
             requests: Type.Record,
@@ -306,7 +263,6 @@ extension Interface {
                 return "@_Embeddings(preserving: \(String(reflecting: preserving)), \(bindings))"
             }
             let source = "Coproduct" + (parameters.isEmpty ? "" : "<" + parameters.joined(separator: ", ") + ">")
-            // A one-operation Call reads as that operation's input: `request.id`.
             let forwarding =
                 leaves.count == 1 && !leaves[0].symbol.transfers && signature.children.isEmpty
                 ? """
@@ -335,8 +291,6 @@ extension Interface {
                         }
                         """
                 }
-            // A primary is the embedding called; a named operation is a callable member (a property, so that a
-            // store's dynamic member lookup reaches it: `store.create(draft)`); a child is the child's embedding.
             let embedded = leaves.flatMap { leaf -> [String] in
                 let symbol = leaf.symbol
                 let calls = [

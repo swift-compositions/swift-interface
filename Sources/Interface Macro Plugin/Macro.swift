@@ -39,8 +39,6 @@ extension Macro {
                 "@Interface on a struct requires a nested semantic protocol named `Interface`."
             )
         }
-        // Prefer the explicit semantic owner: a nested child may have the same
-        // short name as its parent (for example Artikel.`1`.`1`).
         let name =
             owner.inheritanceClause?.inheritedTypes.lazy.compactMap { inherited -> TypeSyntax? in
                 guard let member = inherited.type.as(MemberTypeSyntax.self),

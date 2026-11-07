@@ -60,7 +60,7 @@ import Testing
 }
 
 @Interface private struct Refusing: Refusing.Interface {
-    enum Refusal: Error { case refused }
+    enum Refusal: Swift.Error { case refused }
     protocol Interface { func callAsFunction(_ value: Bool) throws(Refusal) -> Bool }
 }
 @Test private func `direct invocation retains typed synchronous failure`() {

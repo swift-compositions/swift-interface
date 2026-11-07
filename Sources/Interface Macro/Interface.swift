@@ -8,10 +8,6 @@
 @_exported import Product_Macro
 @_exported import Representable_Macro
 
-// Composes operation derivation and @Product on the generated model,
-// then connects their canonical output with one Call and its interpreter.
-// Copyable calls expose their derived prisms through dynamic member lookup, so
-// optional key paths compose case extraction with input access: `\.delete?.id`.
 @attached(member, names: arbitrary)
 @attached(extension, conformances: Interface.Structured, Interface.Primary)
 /// Compose operations, their implementation product, and their call coproduct.
