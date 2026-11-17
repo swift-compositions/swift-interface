@@ -1,4 +1,3 @@
-import CustomDump
 import Interface_Macro
 import Testing
 
@@ -12,13 +11,13 @@ import Testing
 @Test private func `typed execution and coproduct elimination agree with direct invocation`() async throws {
     let domain = Answers(truth: { $0.value }, text: { $0.value.uppercased() })
     let truth = try await Answers.Truth.Application(.init(false)).run(on: domain)
-    expectNoDifference(truth, domain.truth(false))
+    #expect(truth == domain.truth(false))
     let eliminate = Answers.Call.Eliminator<String>(
         truth: { String(describing: try await $0.run(on: domain)) },
         text: { try await $0.run(on: domain) }
     )
     let text = try await eliminate(.text("answer"))
-    expectNoDifference(text, "ANSWER")
+    #expect(text == "ANSWER")
 }
 
 @Interface private struct Resource: Resource.Interface {
@@ -50,13 +49,13 @@ import Testing
     var group = Group(first: .init { $0.value }, second: .init { _ in false })
     let original = group
     group[keyPath: Group.Structure.first.path] = .init { _ in nil }
-    expectNoDifference(original.first(true), true)
-    expectNoDifference(group.first(true), nil)
-    expectNoDifference(Group(group.product).second(true), false)
+    #expect(original.first(true) == true)
+    #expect(group.first(true) == nil)
+    #expect(Group(group.product).second(true) == false)
     var mixed = Mixed(text: { $0.value }, first: .init { $0.value })
     mixed[keyPath: Mixed.Structure.first.path] = .init { _ in nil }
-    expectNoDifference(mixed.first(true), nil)
-    expectNoDifference(mixed.text("retained"), "retained")
+    #expect(mixed.first(true) == nil)
+    #expect(mixed.text("retained") == "retained")
 }
 
 @Interface private struct Refusing: Refusing.Interface {
@@ -91,7 +90,7 @@ import Testing
     try await owner(.right.append("one"))
     try await owner(.left.append("two"))
     let values = await recorder.values
-    expectNoDifference(values, ["right:one", "left:two"])
+    #expect(values == ["right:one", "left:two"])
 }
 
 @Interface private struct Empty: Empty.Interface { protocol Interface {} }

@@ -21,12 +21,11 @@ let package = Package(
         .trait(name: "Dependencies", description: "Dependencies integration")
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-custom-dump.git", from: "1.7.3"),
         .package(url: "https://github.com/swift-atoms/swift-functor.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-finite.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-algebra.git", branch: "main"),
         .package(url: "https://github.com/swift-compositions/swift-dependencies.git", branch: "main"),
-        .package(url: "https://github.com/pointfreeco/swift-issue-reporting", from: "2.1.0"),
+        .package(url: "https://github.com/swift-compositions/swift-issue-reporting.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-optic.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-operation.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-coproduct.git", branch: "main"),
@@ -39,7 +38,7 @@ let package = Package(
             dependencies: [
                 .target(name: "Interface Macro"),
                 .product(name: "Dependencies", package: "swift-dependencies", condition: .when(traits: ["Dependencies"])),
-                .product(name: "IssueReporting", package: "swift-issue-reporting", condition: .when(traits: ["Dependencies"])),
+                .product(name: "Issue Reporting", package: "swift-issue-reporting", condition: .when(traits: ["Dependencies"])),
             ]
         ),
         .target(
@@ -95,7 +94,8 @@ let package = Package(
             dependencies: [
                 .target(name: "Interface Macro"),
                 .target(name: "Interface Macro Core"),
-                .product(name: "CustomDump", package: "swift-custom-dump"),
+                .target(name: "Interface Dependencies"),
+                .product(name: "Issue Reporting", package: "swift-issue-reporting", condition: .when(traits: ["Dependencies"])),
                 .product(name: "SwiftParser", package: "swift-syntax"),
             ],
             resources: [.copy("Fixtures")]

@@ -1,0 +1,7 @@
+description: "A macro that derives an implementation product and a call coproduct from a dependency's declared operations and child interfaces in Swift."
+topics:
+  - compositions
+  - interface
+homepage: "https://swift-institute.org"
+readme:
+  family: E

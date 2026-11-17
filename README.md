@@ -1,58 +1,16 @@
-# Interface
+# swift-interface
 
-`@Interface` assembles a finite operation signature and its child interfaces into an
-implementation product and a call coproduct. It derives the connections between
-those representations; it does not define assessment, persistence, UI, defaults,
-or test-fallback policy.
+Use this package when a dependency's surface is a set of operations and child dependencies that callers invoke directly, and that a test, a log or a transport also needs as data: a call value to send or record, and a product of implementations in which one coordinate is replaced. Declare the surface as a `protocol Interface` nested in a struct, conform the struct to it, and attach `@Interface`: a function requirement becomes an operation, and a property whose type is itself an `@Interface` struct becomes a child. Each operation gets a named symbol (`Store.Lookup`) with `Input`, `Output`, `Failure` and `Application` from swift-operation; the implementation is a product of closures and children from swift-product, whose memberwise initializer is the struct's; `Store.Call` is the coproduct of every operation and every child's calls from swift-coproduct, folded by `Call.Eliminator<Result>`; and `Store.Structure.<child>` is an `Interface.Member`, a name and a writable key path. Interface only connects these and defines no defaults, persistence, UI, assessment or test policy. `Execution Tests.swift` holds the worked examples.
 
-## Ownership
+## Laws
 
-- Operation derives named symbols with Input, Output, Failure, and Application.
-- Product derives implementation storage and construction. Child coordinates are
-  mutable value coordinates in pure-child and mixed products alike.
-- Coproduct derives elimination; Optic derives projections and injections.
-- Interface connects symbols to implementation coordinates and call cases. Direct
-  calls and dispatched calls share the symbol's execution witness.
-- Finite and Representable derive explicitly selected input capabilities.
-- Interface Dependencies owns optional unimplemented fallback functions. No core
-  construction protocol knows Void or stream fallback policies.
-
-## Execution
-
-Call a declared operation directly for its precise output and effects. A typed
-Application can run on an implementation through Operation.Operable; that generic
-boundary is async throws. A heterogeneous Call is eliminated into a result chosen
-by its consumer. Its standard run interpreter discards results deliberately.
-There is no generated Evaluation family or second evaluation dispatcher.
-
-## Explicit input capabilities
-
-```swift
-@Interface(inputConformances: ["Swift.Hashable", "Swift.Sendable"])
-struct Service: Service.Interface {
-    protocol Interface { func lookup(_ id: Int) -> String }
-}
-```
-
-`inputAttributes` forwards explicitly requested leaf derivations, for example
-`"@Finite"` or `"@Representable"`. Their implementation and eligibility checks stay
-with their owners. Equivalent spellings of an input type do not activate different
-Interface policies. Swift checks declared conformances. A separately used
-`@Operations` remains independent of Interface and has no composed mode.
-
-Child defaults belong in an explicit initializer selecting child implementations.
-A product's existence does not imply a preferred element of each factor.
-
-## Migration
-
-Replace leaf evaluate calls with direct operations or typed Application.run(on:).
-For arbitrary calls, use Call.Eliminator with a consumer-selected result. Replace
-Interface.WritableMember and writablePath with Interface.Member and path. Remove
-nested @Operations from Interface declarations and forward capabilities through
-Interface's explicit input arguments. Replace @Interface(defaults: true) with
-explicit domain assembly. Unimplemented test dependencies explicitly construct
-implementations in their integration layer; the core emits no factory hook.
-
-The representation preserves existing Call case identities, primary Input/Output/
-Failure aliases, and explicit generic dispatch effect widening. Compiler-specific
-macro placement remains a Swift representation constraint, not domain semantics.
+- An operation's closure receives its `Input`, whose members are the declared parameters by name (`$0.id`).
+- Calling an operation directly, running its `Application` on an implementation, and eliminating its `Call` run the same closure once, with the same input. Running an `Application` or dispatching a `Call` is `async throws`; a direct call keeps the declared effects exactly, typed failure included.
+- A child's calls are reached by injection (`store(.log.append("…"))`), and dispatching one runs exactly one leaf operation, in the child the injection names.
+- A noncopyable result survives typed execution.
+- Replacing a child through its member's `path` leaves every sibling coordinate as it was, in a product of children alone and in one that mixes children and operations.
+- An unlabelled `callAsFunction` requirement is the interface's `Interface.Primary` operation, and its input is also named `Request`.
+- A product of children implies no preferred implementation of any child. Defaults belong in an initializer the domain writes, choosing each child's implementation.
+- An operation's input conforms to nothing beyond what Swift infers unless asked: `inputConformances` names protocols for every input, and `inputAttributes` attaches derivations such as `"@Finite"` or `"@Representable"`, which swift-finite and swift-functor implement and check. Two spellings of one input type never select different behaviour. `@Operations` is never nested inside an `@Interface`.
+- `Unimplemented.value(output:failure:operation:)`, the fallback for an operation a test does not expect to be called, reports an issue through swift-issue-reporting on every use, so the running test fails. It exists only for outputs with a lawful empty value: `Void`, and a finished `AsyncStream` or `AsyncThrowingStream`. Any other operation needs an explicit test implementation; no domain value or typed error is invented.
+- The interface protocol is nested in the struct and named in its conformance list because macro expansion requires it, not because the domain does. `_Embeddings` is the hook `@Interface` emits for child injections and is never written by hand.
