@@ -26,7 +26,7 @@ let package = Package(
         .package(url: "https://github.com/swift-atoms/swift-algebra.git", branch: "main"),
         .package(url: "https://github.com/swift-compositions/swift-dependencies.git", branch: "main"),
         .package(url: "https://github.com/swift-compositions/swift-issue-reporting.git", branch: "main"),
-        .package(url: "https://github.com/swift-atoms/swift-optic.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-optic.git", branch: "main", traits: ["Coproduct"]),
         .package(url: "https://github.com/swift-atoms/swift-operation.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-coproduct.git", branch: "main"),
         .package(url: "https://github.com/swift-atoms/swift-product.git", branch: "main"),
